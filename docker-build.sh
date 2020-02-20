@@ -26,8 +26,13 @@ docker_build_push() {
 	IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$SERVICE:arm64v8-$VERSION
 
 	# build docker images
+	echo "======> Building Docker Image: [ $IMG_NAME_DEFAULT, $IMG_NAME_AMD64 ]"
 	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $SERVICE/Dockerfile $SERVICE
+
+	echo "======> Building Docker Image: [ $IMG_NAME_ARM32V7 ]"
 	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 -t $IMG_NAME_ARM32V7 -f $SERVICE/arm.Dockerfile $SERVICE
+
+	echo "======> Building Docker Image: [ $IMG_NAME_ARM64V8 ]"
 	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 -t $IMG_NAME_ARM64V8 -f $SERVICE/aarch64.Dockerfile $SERVICE
 
 	# push docker images
@@ -52,8 +57,13 @@ docker_build_push_multiarch_existing() {
 	IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$SERVICE:arm64v8-$VERSION
 
 	# build docker images
+	echo "======> Building Docker Image: [ $IMG_NAME_DEFAULT, $IMG_NAME_AMD64 ]"
 	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT --build-arg ARCH=amd64 -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $SERVICE/Dockerfile $SERVICE
+
+	echo "======> Building Docker Image: [ $IMG_NAME_ARM32V7 ]"
 	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 --build-arg ARCH=arm -t $IMG_NAME_ARM32V7 -f $SERVICE/Dockerfile $SERVICE
+
+	echo "======> Building Docker Image: [ $IMG_NAME_ARM64V8 ]"
 	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 --build-arg ARCH=arm64 -t $IMG_NAME_ARM64V8 -f $SERVICE/Dockerfile $SERVICE
 
 	# push docker images
