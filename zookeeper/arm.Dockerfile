@@ -1,4 +1,4 @@
-ARG BASE_IMG=arm32v7/openjdk:11-jre-slim
+ARG BASE_IMG=arm32v7/openjdk:8-jre-alpine
 FROM $BASE_IMG
 
 ARG ZK_VERSION=3.4.13
