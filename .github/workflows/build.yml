@@ -28,7 +28,7 @@ jobs:
     - name: Build and push Docker Images
       run: >
         bash docker-build.sh
-        ${{ env.DOCKERHUB_APACHE_REPO }}
+        ${{ env.DOCKERHUB_REPO }}
         ${{ env.BASE_IMG_JRE_DEFAULT }}
         ${{ env.BASE_IMG_JRE_ARM32V7 }}
         ${{ env.BASE_IMG_JRE_ARM64V8 }}
