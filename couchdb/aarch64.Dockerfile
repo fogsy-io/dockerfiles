@@ -36,7 +36,7 @@ RUN set -ex; \
 	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-$dpkgArch"; \
 	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
 	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --no-tty --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+	gpg --no-tty --keyserver ipv4.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
 	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
 	rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc; \
 	chmod +x /usr/local/bin/gosu; \
@@ -48,7 +48,7 @@ RUN set -ex; \
 	wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-$dpkgArch"; \
 	wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-$dpkgArch.asc"; \
 	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --no-tty --keyserver ha.pool.sks-keyservers.net --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7; \
+	gpg --no-tty --keyserver ipv4.pool.sks-keyservers.net --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7; \
 	gpg --batch --verify /usr/local/bin/tini.asc /usr/local/bin/tini; \
 	rm -r "$GNUPGHOME" /usr/local/bin/tini.asc; \
 	chmod +x /usr/local/bin/tini; \
@@ -73,7 +73,7 @@ ENV GPG_KEYS \
   2EC788AE3F239FA13E82D215CDE711289384AE37
 RUN set -xe \
   && for key in $GPG_KEYS; do \
-    gpg --no-tty --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+    gpg --no-tty --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
 ENV COUCHDB_VERSION 2.3.1

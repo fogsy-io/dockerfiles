@@ -13,184 +13,92 @@ INFLUXDB_VERSION=1.7
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
 
+cp_qemu() {
+	cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $1
+}
+
+docker_build_push() {
+	SERVICE=$1
+	VERSION=$2
+	IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$SERVICE:$VERSION
+	IMG_NAME_AMD64=$DOCKERHUB_REPO/$SERVICE:amd64-$VERSION
+	IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$SERVICE:arm32v7-$VERSION
+	IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$SERVICE:arm64v8-$VERSION
+
+	# build docker images
+	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $SERVICE/Dockerfile $SERVICE
+	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 -t $IMG_NAME_ARM32V7 -f $SERVICE/arm.Dockerfile $SERVICE
+	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 -t $IMG_NAME_ARM64V8 -f $SERVICE/aarch64.Dockerfile $SERVICE
+
+	# push docker images
+	docker push $IMG_NAME_DEFAULT
+	docker push $IMG_NAME_AMD64
+	docker push $IMG_NAME_ARM32V7
+	docker push $IMG_NAME_ARM64V8
+
+	# create manifest and push
+	docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
+	docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
+	docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
+	docker manifest push $IMG_NAME_DEFAULT
+}
+
+docker_build_push_multiarch_existing() {
+	SERVICE=$1
+	VERSION=$2
+	IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$SERVICE:$VERSION
+	IMG_NAME_AMD64=$DOCKERHUB_REPO/$SERVICE:amd64-$VERSION
+	IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$SERVICE:arm32v7-$VERSION
+	IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$SERVICE:arm64v8-$VERSION
+
+	# build docker images
+	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT --build-arg ARCH=amd64 -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $SERVICE/Dockerfile $SERVICE
+	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 --build-arg ARCH=arm -t $IMG_NAME_ARM32V7 -f $SERVICE/Dockerfile $SERVICE
+	docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 --build-arg ARCH=arm64 -t $IMG_NAME_ARM64V8 -f $SERVICE/Dockerfile $SERVICE
+
+	# push docker images
+	docker push $IMG_NAME_DEFAULT
+	docker push $IMG_NAME_AMD64
+	docker push $IMG_NAME_ARM32V7
+	docker push $IMG_NAME_ARM64V8
+
+	# create manifest and push
+	docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
+	docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
+	docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
+	docker manifest push $IMG_NAME_DEFAULT
+}
+
+
+
 array=( activemq consul couchdb influxdb kafka zookeeper )
 for i in "${array[@]}"
 do
 	echo "======> Building Docker Image: [ $i ]"
 
-  # set env vars
-  # IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$MVN_VERSION
-  # IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$MVN_VERSION
-  # IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$MVN_VERSION
-  # IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$MVN_VERSION
   if [ "$i" == "activemq" ]; then
-    VERSION=$ACTIVEMQ_VERSION
-
-		IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$VERSION
-		IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$VERSION
-		IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$VERSION
-		IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$VERSION
-
-		# copy qemu to service dir
-		cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $i
-
-		# build docker images
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 -t $IMG_NAME_ARM32V7 -f $i/arm.Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 -t $IMG_NAME_ARM64V8 -f $i/aarch64.Dockerfile $i
-
-		# push docker images
-		docker push $IMG_NAME_DEFAULT
-		docker push $IMG_NAME_AMD64
-		docker push $IMG_NAME_ARM32V7
-		docker push $IMG_NAME_ARM64V8
-
-		# create manifest and push
-		docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
-		docker manifest push $IMG_NAME_DEFAULT
+		cp_qemu $i
+		docker_build_push $i $ACTIVEMQ_VERSION
 
   elif [ "$i" == "consul" ]; then
-    VERSION=$CONSUL_VERSION
-
-		IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$VERSION
-		IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$VERSION
-		IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$VERSION
-		IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$VERSION
-
-		# copy qemu to service dir
-		cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $i
-
-		# build docker images
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT --build-arg ARCH=amd64 -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 --build-arg ARCH=arm -t $IMG_NAME_ARM32V7 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 --build-arg ARCH=arm64 -t $IMG_NAME_ARM64V8 -f $i/Dockerfile $i
-
-		# push docker images
-		docker push $IMG_NAME_DEFAULT
-		docker push $IMG_NAME_AMD64
-		docker push $IMG_NAME_ARM32V7
-		docker push $IMG_NAME_ARM64V8
-
-		# create manifest and push
-		docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
-		docker manifest push $IMG_NAME_DEFAULT
+		cp_qemu $i
+		docker_build_push_multiarch_existing $i $CONSUL_VERSION
 
   elif [ "$i" == "couchdb" ]; then
-    VERSION=$COUCHDB_VERSION
-
-		IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$VERSION
-		IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$VERSION
-		IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$VERSION
-		IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$VERSION
-
-		# copy qemu to service dir
-		cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $i
-
-		# build docker images
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 -t $IMG_NAME_ARM32V7 -f $i/arm.Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 -t $IMG_NAME_ARM64V8 -f $i/aarch64.Dockerfile $i
-
-		# push docker images
-		docker push $IMG_NAME_DEFAULT
-		docker push $IMG_NAME_AMD64
-		docker push $IMG_NAME_ARM32V7
-		docker push $IMG_NAME_ARM64V8
-
-		# create manifest and push
-		docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
-		docker manifest push $IMG_NAME_DEFAULT
+		cp_qemu $i
+		docker_build_push $i $COUCHDB_VERSION
 
   elif [ "$i" == "influxdb" ]; then
-    VERSION=$INFLUXDB_VERSION
-
-		IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$VERSION
-		IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$VERSION
-		IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$VERSION
-		IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$VERSION
-
-		# copy qemu to service dir
-		cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $i
-
-		# build docker images
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT --build-arg ARCH=amd64 -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 --build-arg ARCH=arm -t $IMG_NAME_ARM32V7 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 --build-arg ARCH=arm64 -t $IMG_NAME_ARM64V8 -f $i/Dockerfile $i
-
-		# push docker images
-		docker push $IMG_NAME_DEFAULT
-		docker push $IMG_NAME_AMD64
-		docker push $IMG_NAME_ARM32V7
-		docker push $IMG_NAME_ARM64V8
-
-		# create manifest and push
-		docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
-		docker manifest push $IMG_NAME_DEFAULT
+		cp_qemu $i
+		docker_build_push_multiarch_existing $i $INFLUXDB_VERSION
 
   elif [ "$i" == "kafka" ]; then
-    VERSION=$KAFKA_VERSION
-
-		IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$VERSION
-		IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$VERSION
-		IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$VERSION
-		IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$VERSION
-
-		# copy qemu to service dir
-		cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $i
-
-		# build docker images
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 -t $IMG_NAME_ARM32V7 -f $i/arm.Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 -t $IMG_NAME_ARM64V8 -f $i/aarch64.Dockerfile $i
-
-		# push docker images
-		docker push $IMG_NAME_DEFAULT
-		docker push $IMG_NAME_AMD64
-		docker push $IMG_NAME_ARM32V7
-		docker push $IMG_NAME_ARM64V8
-
-		# create manifest and push
-		docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
-		docker manifest push $IMG_NAME_DEFAULT
+		cp_qemu $i
+		docker_build_push $i $KAFKA_VERSION
 
   elif [ "$i" == "zookeeper" ]; then
-    VERSION=$ZK_VERSION
-
-		IMG_NAME_DEFAULT=$DOCKERHUB_REPO/$i:$VERSION
-		IMG_NAME_AMD64=$DOCKERHUB_REPO/$i:amd64-$VERSION
-		IMG_NAME_ARM32V7=$DOCKERHUB_REPO/$i:arm32v7-$VERSION
-		IMG_NAME_ARM64V8=$DOCKERHUB_REPO/$i:arm64v8-$VERSION
-
-		# copy qemu to service dir
-		cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $i
-
-		# build docker images
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_DEFAULT -t $IMG_NAME_DEFAULT -t $IMG_NAME_AMD64 -f $i/Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM32V7 -t $IMG_NAME_ARM32V7 -f $i/arm.Dockerfile $i
-		docker build --pull --build-arg BASE_IMG=$BASE_IMG_JRE_ARM64V8 -t $IMG_NAME_ARM64V8 -f $i/aarch64.Dockerfile $i
-
-		# push docker images
-		docker push $IMG_NAME_DEFAULT
-		docker push $IMG_NAME_AMD64
-		docker push $IMG_NAME_ARM32V7
-		docker push $IMG_NAME_ARM64V8
-
-		# create manifest and push
-		docker manifest create $IMG_NAME_DEFAULT $IMG_NAME_AMD64 $IMG_NAME_ARM32V7 $IMG_NAME_ARM64V8
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM32V7 --os linux --arch arm
-		docker manifest annotate $IMG_NAME_DEFAULT $IMG_NAME_ARM64V8 --os linux --arch arm64
-		docker manifest push $IMG_NAME_DEFAULT
-				
+		cp_qemu $i
+		docker_build_push $i $ZK_VERSION
   fi
 
 done
