@@ -1,19 +1,16 @@
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not
-# use this file except in compliance with the License. You may obtain a copy of
-# the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations under
-# the License.
-
 ARG BASE_IMAGE=debian:stretch-slim
 FROM $BASE_IMAGE
 
-LABEL maintainer="CouchDB Developers dev@couchdb.apache.org"
+ARG BUILD_DATE
+ARG VCS_REF
+
+LABEL io.fogsy.build-date=$BUILD_DATE \
+      io.fogsy.license="Apache 2.0" \
+      io.fogsy.organization="fogsy-io" \
+      io.fogsy.url="https://fogsy.io/" \
+      io.fogsy.vcs-ref=$VCS_REF \
+      io.fogsy.vcs-type="Git" \
+      io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
 
 # Add CouchDB user account to make sure the IDs are assigned consistently
 RUN groupadd -g 5984 -r couchdb && useradd -u 5984 -d /opt/couchdb -g couchdb couchdb

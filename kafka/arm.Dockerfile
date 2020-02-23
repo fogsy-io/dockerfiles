@@ -1,15 +1,21 @@
 ARG BASE_IMG=arm32v7/openjdk:8-jre-alpine
 FROM $BASE_IMG
 
-# The Scala 2.11 build is currently recommended by the project.
-ARG KAFKA_VERSION=2.2.0
-ARG SCALA_VERSION=2.12
-ARG GLIBC_VERSION=2.29-r0
+ARG BUILD_DATE
+ARG VCS_REF
 
-ENV KAFKA_VERSION=$KAFKA_VERSION \
-    SCALA_VERSION=$SCALA_VERSION \
+LABEL io.fogsy.build-date=$BUILD_DATE \
+      io.fogsy.license="Apache 2.0" \
+      io.fogsy.organization="fogsy-io" \
+      io.fogsy.url="https://fogsy.io/" \
+      io.fogsy.vcs-ref=$VCS_REF \
+      io.fogsy.vcs-type="Git" \
+      io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
+
+ENV KAFKA_VERSION=2.2.0 \
+    SCALA_VERSION=2.12 \
     KAFKA_HOME=/opt/kafka \
-    GLIBC_VERSION=$GLIBC_VERSION
+    GLIBC_VERSION=2.29-r0
 
 ENV PATH=${PATH}:${KAFKA_HOME}/bin
 

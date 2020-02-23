@@ -1,6 +1,17 @@
 ARG BASE_IMAGE=arm32v7/debian:stretch-slim
 FROM $BASE_IMAGE
 
+ARG BUILD_DATE
+ARG VCS_REF
+
+LABEL io.fogsy.build-date=$BUILD_DATE \
+      io.fogsy.license="Apache 2.0" \
+      io.fogsy.organization="fogsy-io" \
+      io.fogsy.url="https://fogsy.io/" \
+      io.fogsy.vcs-ref=$VCS_REF \
+      io.fogsy.vcs-type="Git" \
+      io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
+
 COPY qemu-arm-static /usr/bin
 
 # Add CouchDB user account to make sure the IDs are assigned consistently
