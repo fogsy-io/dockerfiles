@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 DOCKERHUB_REPO=$1
-# MVN_VERSION=$2
 BASE_IMG_JRE_DEFAULT=$2
 BASE_IMG_JRE_ARM32V7=$3
 BASE_IMG_JRE_ARM64V8=$4
@@ -12,6 +11,8 @@ COUCHDB_VERSION=2.3.1
 INFLUXDB_VERSION=1.7
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
+
+docker_img_array=( activemq consul couchdb influxdb kafka zookeeper )
 
 cp_qemu() {
 	cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $1
@@ -80,10 +81,7 @@ docker_build_push_multiarch_existing() {
 	docker manifest push $IMG_NAME_DEFAULT
 }
 
-
-
-array=( activemq consul couchdb influxdb kafka zookeeper )
-for i in "${array[@]}"
+for i in "${docker_img_array[@]}"
 do
 	echo "======> Building Docker Image: [ $i ]"
 
