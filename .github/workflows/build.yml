@@ -16,6 +16,9 @@ jobs:
         echo "::set-env name=BASE_IMG_JRE_DEFAULT::adoptopenjdk/openjdk8-openj9:alpine-slim"
         echo "::set-env name=BASE_IMG_JRE_ARM32V7::arm32v7/openjdk:8-jre-alpine"
         echo "::set-env name=BASE_IMG_JRE_ARM64V8::arm64v8/openjdk:8-jre-alpine"
+        echo "::set-env name=BASE_IMG_DEBIAN_DEFAULT::debian:stretch-slim"
+        echo "::set-env name=BASE_IMG_DEBIAN_ARM32V7::arm32v7/debian:stretch-slim"
+        echo "::set-env name=BASE_IMG_DEBIAN_ARM64V8::arm64v8/debian:stretch-slim"
     - name: Docker enable experimental feature
       run: |
         echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json
@@ -32,3 +35,6 @@ jobs:
         ${{ env.BASE_IMG_JRE_DEFAULT }}
         ${{ env.BASE_IMG_JRE_ARM32V7 }}
         ${{ env.BASE_IMG_JRE_ARM64V8 }}
+        ${{ env.BASE_IMG_DEBIAN_DEFAULT }}
+        ${{ env.BASE_IMG_DEBIAN_ARM32V7 }}
+        ${{ env.BASE_IMG_DEBIAN_ARM64V8 }}
