@@ -21,7 +21,7 @@ ENV COUCHDB_VERSION=2.3.1 \
 RUN set -x \
     && echo "install runtime dependencies" \
     && apt -y update \
-    && apt -y --no-install-recommends install ca-certificates curl erlang-nox erlang-reltool libicu52 libmozjs185-1.0 openssl
+    && apt -y --no-install-recommends install ca-certificates curl erlang-nox erlang-reltool libicu55 libmozjs185-1.0 openssl
 
 RUN set -x \
     && DEPENDENCIES='python wget apt-transport-https gcc g++ erlang-dev libcurl4-openssl-dev libicu-dev libmozjs185-dev make' \
