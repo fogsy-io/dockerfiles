@@ -12,8 +12,8 @@ LABEL io.fogsy.build-date=$BUILD_DATE \
       io.fogsy.vcs-type="Git" \
       io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
 
-ENV ZK_VERSION=3.4.13 \
-    ZK_HOME=/opt/zookeeper-$ZK_VERSION
+ENV ZK_VERSION=3.4.13
+ENV ZK_HOME=/opt/zookeeper-$ZK_VERSION
 
 COPY qemu-arm-static /usr/bin
 
