@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
 DOCKERHUB_REPO=$1
-BASE_IMG_JRE_DEFAULT=$2
-BASE_IMG_JRE_ARM32V7=$3
-BASE_IMG_JRE_ARM64V8=$4
-BASE_IMG_DEBIAN_DEFAULT=$5
-BASE_IMG_DEBIAN_ARM32V7=$6
-BASE_IMG_DEBIAN_ARM64V8=$7
+BASE_IMG_ALPINE_DEFAULT=$2
+BASE_IMG_ALPINE_ARM32V7=$3
+BASE_IMG_ALPINE_ARM64V8=$4
+BASE_IMG_JRE_DEFAULT=$5
+BASE_IMG_JRE_ARM32V7=$6
+BASE_IMG_JRE_ARM64V8=$7
+BASE_IMG_DEBIAN_DEFAULT=$8
+BASE_IMG_DEBIAN_ARM32V7=$9
+BASE_IMG_DEBIAN_ARM64V8=$10
 
 ACTIVEMQ_VERSION=5.15.9
 CONSUL_VERSION=1.7.0
@@ -14,11 +17,17 @@ COUCHDB_VERSION=2.3.1
 INFLUXDB_VERSION=1.7
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
+DNSMASQ_VERSION=1.7.0
 
-docker_img_array=( activemq consul couchdb influxdb kafka zookeeper )
+docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq)
 
 cp_qemu() {
 	cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $1
+}
+
+build_go_binaries() {
+	cd $1
+	./build_go_binaries.sh $2
 }
 
 docker_build_push() {
@@ -38,6 +47,10 @@ docker_build_push() {
 			BASE_IMG_DEFAULT=$BASE_IMG_DEBIAN_DEFAULT
 			BASE_IMG_ARM32V7=$BASE_IMG_DEBIAN_ARM32V7
 			BASE_IMG_ARM64V8=$BASE_IMG_DEBIAN_ARM64V8
+	elif [ "$TYPE" == "go" ]; then
+			BASE_IMG_DEFAULT=$BASE_IMG_ALPINE_DEFAULT
+			BASE_IMG_ARM32V7=$BASE_IMG_ALPINE_ARM32V7
+			BASE_IMG_ARM64V8=$BASE_IMG_ARM64V8
 	fi
 
 	# build docker images
@@ -155,6 +168,11 @@ do
   elif [ "$i" == "zookeeper" ]; then
 		cp_qemu $i
 		docker_build_push "jre" $i $ZK_VERSION
+
+	elif [ "$i" == "go-dnsmasq" ]; then
+		cp_qemu $i
+		build_go_binaries $i $DNSMASQ_VERSION
+		docker_build_push "go" $i $DNSMASQ_VERSION
   fi
 
 done
