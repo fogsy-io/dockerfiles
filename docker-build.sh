@@ -19,7 +19,7 @@ KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
 DNSMASQ_VERSION=1.7.0
 
-docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq)
+docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq )
 
 cp_qemu() {
 	cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $1
@@ -27,7 +27,62 @@ cp_qemu() {
 
 build_go_binaries() {
 	cd $1
-	./build_go_binaries.sh $2
+	VERSION=$2
+
+	echo "======> Building binary [ $1:$VERSION ]"
+
+	BUILD_IMAGE_NAME="go-dnsmasq-build"
+	GOARCH=${GOARCH:-"amd64 arm arm64"}
+	GOOS=${GOOS:-"linux"}
+
+	docker build -t ${BUILD_IMAGE_NAME} -f- . <<EOF
+FROM golang:1.13
+
+# TODO: Vendor these `go get` commands using Godep.
+RUN \
+		go get github.com/mitchellh/gox; \
+		go get github.com/aktau/github-release; \
+		go get github.com/pwaller/goupx; \
+		go get github.com/urfave/cli; \
+		go get github.com/coreos/go-systemd/activation; \
+		go get github.com/miekg/dns; \
+		go get github.com/rcrowley/go-metrics; \
+		go get github.com/rcrowley/go-metrics/stathat; \
+		go get github.com/sirupsen/logrus; \
+		go get github.com/stathat/go
+
+RUN \
+		apt update; \
+		apt install -y xz-utils; \
+		wget -P /tmp https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz; \
+		tar -xf /tmp/upx-3.96-amd64_linux.tar.xz -C /tmp; \
+		mv /tmp/upx-3.96-amd64_linux/upx /usr/local/bin;
+
+ENV USER root
+
+ADD . /go/src/github.com/fogsyio/dockerfiles/go-dnsmasq
+
+WORKDIR /go/src/github.com/fogsyio/dockerfiles/go-dnsmasq
+EOF
+
+	echo "======> Building go-binaries for [ $GOARCH ]"
+
+	sleep 2
+
+	docker run --rm \
+	    -v `pwd`:/go/src/github.com/fogsyio/dockerfiles/go-dnsmasq \
+	    ${BUILD_IMAGE_NAME} \
+	    gox \
+	    -os "$GOOS" \
+	    -arch "$GOARCH" \
+	    -output="go-dnsmasq_{{.OS}}-{{.Arch}}" \
+	    -ldflags "-w -s -X main.Version=$VERSION" \
+	    -tags="netgo" \
+	    -rebuild
+
+	echo "======> Remove temporary image [ $BUILD_IMAGE_NAME ]"
+	docker rmi ${BUILD_IMAGE_NAME} 2> /dev/null
+
 }
 
 docker_build_push() {
