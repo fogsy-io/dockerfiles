@@ -1,41 +1,45 @@
 #!/usr/bin/env bash
 
 DOCKERHUB_REPO=$1
-BASE_IMG_ALPINE_DEFAULT=$2
-BASE_IMG_ALPINE_ARM32V7=$3
-BASE_IMG_ALPINE_ARM64V8=$4
-BASE_IMG_JRE_DEFAULT=$5
-BASE_IMG_JRE_ARM32V7=$6
-BASE_IMG_JRE_ARM64V8=$7
-BASE_IMG_DEBIAN_DEFAULT=$8
-BASE_IMG_DEBIAN_ARM32V7=$9
-BASE_IMG_DEBIAN_ARM64V8=$10
 
+# base images
+BASE_IMG_ALPINE_DEFAULT=alpine:3.9
+BASE_IMG_ALPINE_ARM32V7=arm32v7/alpine:3.9
+BASE_IMG_ALPINE_ARM64V8=arm64v8/alpine:3.9
+BASE_IMG_JRE_DEFAULT=adoptopenjdk/openjdk8-openj9:alpine-slim
+BASE_IMG_JRE_ARM32V7=arm32v7/openjdk:8-jre-alpine
+BASE_IMG_JRE_ARM64V8=arm64v8/openjdk:8-jre-alpine
+BASE_IMG_DEBIAN_DEFAULT=debian:stretch-slim
+BASE_IMG_DEBIAN_ARM32V7=arm32v7/debian:stretch-slim
+BASE_IMG_DEBIAN_ARM64V8=arm64v8/debian:stretch-slim
+
+# image version tags
 ACTIVEMQ_VERSION=5.15.9
 CONSUL_VERSION=1.7.0
 COUCHDB_VERSION=2.3.1
 INFLUXDB_VERSION=1.7
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
-DNSMASQ_VERSION=1.7.0
+DNSMASQ_VERSION=1.0.7
 
 docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq )
 
 cp_qemu() {
+	echo "======> Copy qemu static binaries: [ $1 ]"
 	cp /usr/bin/{qemu-arm-static,qemu-aarch64-static} $1
 }
 
 build_go_binaries() {
-	cd $1
+	SERVICE=$1
 	VERSION=$2
 
-	echo "======> Building binary [ $1:$VERSION ]"
+	echo "======> Building temporary go image [ $SERVICE:$VERSION ]"
 
 	BUILD_IMAGE_NAME="go-dnsmasq-build"
 	GOARCH=${GOARCH:-"amd64 arm arm64"}
 	GOOS=${GOOS:-"linux"}
 
-	docker build -t ${BUILD_IMAGE_NAME} -f- . <<EOF
+	docker build -t ${BUILD_IMAGE_NAME} -f- ./go-dnsmasq <<EOF
 FROM golang:1.13
 
 # TODO: Vendor these `go get` commands using Godep.
@@ -70,7 +74,7 @@ EOF
 	sleep 2
 
 	docker run --rm \
-	    -v `pwd`:/go/src/github.com/fogsyio/dockerfiles/go-dnsmasq \
+	    -v `pwd`/go-dnsmasq:/go/src/github.com/fogsyio/dockerfiles/go-dnsmasq \
 	    ${BUILD_IMAGE_NAME} \
 	    gox \
 	    -os "$GOOS" \
@@ -105,7 +109,7 @@ docker_build_push() {
 	elif [ "$TYPE" == "go" ]; then
 			BASE_IMG_DEFAULT=$BASE_IMG_ALPINE_DEFAULT
 			BASE_IMG_ARM32V7=$BASE_IMG_ALPINE_ARM32V7
-			BASE_IMG_ARM64V8=$BASE_IMG_ARM64V8
+			BASE_IMG_ARM64V8=$BASE_IMG_ALPINE_ARM64V8
 	fi
 
 	# build docker images
@@ -226,7 +230,7 @@ do
 
 	elif [ "$i" == "go-dnsmasq" ]; then
 		cp_qemu $i
-		build_go_binaries $i $DNSMASQ_VERSION
+		build_go_binaries $DNSMASQ_VERSION
 		docker_build_push "go" $i $DNSMASQ_VERSION
   fi
 
