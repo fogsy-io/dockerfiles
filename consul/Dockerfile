@@ -12,3 +12,14 @@ LABEL io.fogsy.build-date=$BUILD_DATE \
       io.fogsy.vcs-ref=$VCS_REF \
       io.fogsy.vcs-type="Git" \
       io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
+
+CMD [ "/bin/sh", "-c", \
+      "consul agent", \
+      "-server", \
+      "-bootstrap-expect=1", \
+      "-data-dir=/consul/data", \
+      "-node=consul-one", \
+      "-bind='{{ GetInterfaceIP "eth0" }}'", \
+      "-client=0.0.0.0", \
+      "-enable-script-checks=true", \
+      "-ui" ]
