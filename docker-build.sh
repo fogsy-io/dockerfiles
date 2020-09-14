@@ -21,8 +21,9 @@ INFLUXDB_VERSION=1.7
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
 DNSMASQ_VERSION=1.0.7
+FLINK_VERSION=1.9.1-scala_2.11
 
-docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq )
+docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq flink )
 
 cp_qemu() {
 	echo "======> Copy qemu static binaries: [ $1 ]"
@@ -228,10 +229,14 @@ do
 		cp_qemu $i
 		docker_build_push "jre" $i $ZK_VERSION
 
-	elif [ "$i" == "go-dnsmasq" ]; then
+  elif [ "$i" == "go-dnsmasq" ]; then
 		cp_qemu $i
 		build_go_binaries $DNSMASQ_VERSION
 		docker_build_push "go" $i $DNSMASQ_VERSION
+
+  elif [ "$i" == "flink" ]; then
+		cp_qemu $i
+		docker_build_push "jre" $i $FLINK_VERSION
   fi
 
 done
