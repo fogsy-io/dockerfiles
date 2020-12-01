@@ -1,5 +1,5 @@
-ARG BASE_IMAGE=debian:stretch-slim
-FROM $BASE_IMAGE
+ARG BASE_IMG=debian:stretch-slim
+FROM $BASE_IMG
 
 ARG BUILD_DATE
 ARG VCS_REF
