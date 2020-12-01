@@ -22,8 +22,9 @@ KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
 DNSMASQ_VERSION=1.0.7
 FLINK_VERSION=1.9.1-scala_2.11
+OPENJDK8_OPENJ9_VERSION=stretch-slim
 
-docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq flink )
+docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq flink openjdk8-openj9 )
 
 cp_qemu() {
 	echo "======> Copy qemu static binaries: [ $1 ]"
@@ -237,6 +238,10 @@ do
   elif [ "$i" == "flink" ]; then
 		cp_qemu $i
 		docker_build_push "jre" $i $FLINK_VERSION
+
+  elif [ "$i" == "openjdk8-openj9" ]; then
+		cp_qemu $i
+		docker_build_push "debian" $i $OPENJDK8_OPENJ9_VERSION
   fi
 
 done
