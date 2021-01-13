@@ -1,4 +1,4 @@
-ARG BASE_IMG=influxdb:1.7
+ARG BASE_IMG=influxdb:1.8
 ARG ARCH
 FROM --platform=$ARCH $BASE_IMG
 
