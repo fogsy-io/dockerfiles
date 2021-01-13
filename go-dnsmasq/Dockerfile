@@ -15,7 +15,7 @@ LABEL io.fogsy.build-date=$BUILD_DATE \
       io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
 
 ENV OS=linux \
-    ARCH=arm
+    ARCH=amd64
 
 ADD go-dnsmasq_$OS-$ARCH /go-dnsmasq
 RUN chmod +x /go-dnsmasq
