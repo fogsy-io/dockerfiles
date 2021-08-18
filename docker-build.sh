@@ -15,13 +15,13 @@ BASE_IMG_DEBIAN_ARM64V8=arm64v8/debian:stretch-slim
 
 # image version tags
 ACTIVEMQ_VERSION=5.15.9
-CONSUL_VERSION=1.7.1
+CONSUL_VERSION=1.9.6
 COUCHDB_VERSION=2.3.1
-INFLUXDB_VERSION=1.8
+INFLUXDB_VERSION=2.0
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
 DNSMASQ_VERSION=1.0.7
-FLINK_VERSION=1.9.1-scala_2.11
+FLINK_VERSION=1.13.2-scala_2.11
 OPENJDK8_OPENJ9_VERSION=stretch-slim
 
 docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq flink )

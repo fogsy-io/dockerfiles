@@ -1,4 +1,4 @@
-ARG BASE_IMG=consul:1.7.1
+ARG BASE_IMG=consul:1.9.6
 ARG ARCH
 FROM --platform=$ARCH $BASE_IMG
 
