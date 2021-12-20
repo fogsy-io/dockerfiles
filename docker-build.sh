@@ -21,7 +21,7 @@ INFLUXDB_VERSION=2.0
 KAFKA_VERSION=2.2.0
 ZK_VERSION=3.4.13
 DNSMASQ_VERSION=1.0.7
-FLINK_VERSION=1.13.2-scala_2.11
+FLINK_VERSION=1.13.5-scala_2.11
 OPENJDK8_OPENJ9_VERSION=stretch-slim
 
 docker_img_array=( activemq consul couchdb influxdb kafka zookeeper go-dnsmasq flink )
