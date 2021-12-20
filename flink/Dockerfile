@@ -13,7 +13,7 @@ LABEL io.fogsy.build-date=$BUILD_DATE \
       io.fogsy.vcs-url="https://github.com/fogsy-io/dockerfiles"
 
 # Install Flink
-ENV FLINK_VERSION=1.13.2 \
+ENV FLINK_VERSION=1.13.5 \
     SCALA_VERSION=2.11 \
     GOSU_VERSION=1.11
 
